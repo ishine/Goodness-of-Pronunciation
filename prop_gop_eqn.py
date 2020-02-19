@@ -2,35 +2,32 @@
 Authors : Sweekar Sudhakara, Manoj Kumar Ramanathi, Chiranjeevi Yarra, Prasanta Kumar Ghosh
 Paper Title : An improved goodness of pronunciation (GoP) measure for pronunciation evaluation with DNN-HMM system considering HMM transition probabilities
 """
-
+import sys
 import math
 import os
+import subprocess
 import pandas as pd
 import numpy as np
 
-path = os.getcwd();
-
-#to generate look up table containing transition-id's, pdf-id's (senones) and transition probability list
-import sys, os
-os.system('./gen_lookup_table.sh'); 
+path = os.getcwd(); 
   
-#modifying posterior.ark to posterior.txt
-import sys, os
-os.system('./modify_post.sh'); 
-
-#creating segment information list, aligned phones list & transition_id's list
-import sys, os
-os.system('./extract_from_alignments.sh');
-                
-with open(path + '/tmp_segments.txt','r') as f:
+# Modifying posterior.ark to posterior.txt
+var1 = [path + '/reqd_files/' + sys.argv[1]];
+subprocess.call(['bash', 'modify_post.sh', str(var1[0])]);
+                    
+# Creating segment information list, aligned phones list & transition_id's list 
+var2 = [path + '/reqd_files/' + sys.argv[2]];
+subprocess.call(['bash', 'extract_from_alignments.sh', str(var2[0])]);
+               
+with open(path + '/reqd_files/tmp_segments.txt','r') as f:
     x = f.readlines();
 number_of_segments = [int(tmp.split(' ')[0]) for tmp in x]; 
                       
-with open(path + '/tmp_t_ids.txt','r') as f:
+with open(path + '/reqd_files/tmp_t_ids.txt','r') as f:
     x = f.readlines();
 transition_id = [int(tmp.rstrip().split(' ')[0]) for tmp in x];
 
-with open(path + '/tmp_phones.txt','r') as f:
+with open(path + '/reqd_files/tmp_phones.txt','r') as f:
     x = f.readlines();
 aligned_phones = [tmp.rstrip().split(' ')[0] for tmp in x];
 
@@ -76,8 +73,8 @@ print(aligned_phones);
 print('GOP formulated score of each phoneme : ');
 print(phone_score);   
                       
-#The phoneme_list.txt file contains phoneme's in the 1st column and GoP formulated scores in the 2nd column     
-f = open('phoneme_list.txt', 'wb')
+# The phoneme_list.txt file contains phoneme's in the 1st column and GoP formulated scores in the 2nd column     
+f = open(sys.argv[3], 'w')
 for i in range(len(phone_score)):
     f.write("%s   %f\n" % (aligned_phones[i], phone_score[i]))
 f.close()
